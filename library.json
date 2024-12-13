@@ -1,0 +1,7 @@
+{
+  "name": "Sodaq_TPH",
+  "version": "0.0.0+20241212132137",
+  "build": {
+    "includeDir": "utility"
+  }
+}
