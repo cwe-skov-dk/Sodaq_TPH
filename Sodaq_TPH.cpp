@@ -72,9 +72,9 @@ float TPH::readTemperatureBMP()
 /*
  * Get the air pressure in Pa
  */
-int32_t TPH::readPressure()
+int32_t TPH::readPressure(int32_t altitude)
 {
-  return bmp.readPressure();
+  return bmp.readPressureReducedToMeanSeaLevel(altitude);
 }
 
 /*

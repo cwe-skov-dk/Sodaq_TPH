@@ -28,7 +28,7 @@ public:
   void begin();
 
   float readTemperature();
-  int32_t readPressure();
+  int32_t readPressure(int32_t altitude = 0);
   float readHumidity();
 
   float readTemperatureBMP();

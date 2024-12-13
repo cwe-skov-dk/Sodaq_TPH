@@ -37,6 +37,7 @@ class Sodaq_BMP085 {
   void begin(uint8_t mode = BMP085_ULTRAHIGHRES);  // by default go highres
   float readTemperature(void);
   int32_t readPressure(void);
+  int32_t readPressureReducedToMeanSeaLevel(int32_t altitude = 0);
   float readAltitude(float sealevelPressure = 101325); // std atmosphere
   uint16_t readRawTemperature(void);
   uint32_t readRawPressure(void);
@@ -51,6 +52,8 @@ class Sodaq_BMP085 {
 
   int16_t ac1, ac2, ac3, b1, b2, mb, mc, md;
   uint16_t ac4, ac5, ac6;
+
+  uint8_t data_d0;
 };
 
 

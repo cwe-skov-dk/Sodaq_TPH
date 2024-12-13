@@ -16,10 +16,9 @@
  ****************************************************/
 
 #include "Sodaq_BMP085.h"
-#include <util/delay.h>
 
 #define BMP085_DEBUG 0
-#define BMP085_ENABLE_DIAG 0
+#define BMP085_ENABLE_DIAG 1
 
 #define BMP085_I2CADDR 0x77
 
@@ -54,7 +53,8 @@ void Sodaq_BMP085::begin(uint8_t mode)
 
   Wire.begin();
 
-  if (read8(0xD0) != 0x55)
+  data_d0 = read8(0xD0);
+  if (data_d0 != 0x55)
     return;
 
   /* read calibration data */
@@ -95,7 +95,7 @@ uint16_t Sodaq_BMP085::readRawTemperature(void)
     begin(oversampling);
   }
   write8(BMP085_CONTROL, BMP085_READTEMPCMD);
-  _delay_ms(5);
+  delay(5);
 #if BMP085_ENABLE_DIAG
   Serial.print("Raw temp: "); Serial.println(read16(BMP085_TEMPDATA));
 #endif
@@ -109,13 +109,13 @@ uint32_t Sodaq_BMP085::readRawPressure(void)
   write8(BMP085_CONTROL, BMP085_READPRESSURECMD + (oversampling << 6));
 
   if (oversampling == BMP085_ULTRALOWPOWER)
-    _delay_ms(5);
+    delay(5);
   else if (oversampling == BMP085_STANDARD)
-    _delay_ms(8);
+    delay(8);
   else if (oversampling == BMP085_HIGHRES)
-    _delay_ms(14);
+    delay(14);
   else
-    _delay_ms(26);
+    delay(26);
 
   raw = read16(BMP085_PRESSUREDATA);
 
@@ -176,6 +176,9 @@ int32_t Sodaq_BMP085::readPressure(void)
   int32_t p;
   uint32_t B4;
   uint32_t B7;
+
+  if (data_d0 != 0x55)
+    return 0;
 
   UT = readRawTemperature();
   UP = readRawPressure();
@@ -264,6 +267,9 @@ float Sodaq_BMP085::readTemperature(void)
   int32_t UT, B5;
   float temp;
 
+  if (data_d0 != 0x55)
+    return 0;
+
   UT = readRawTemperature();
 
 #if BMP085_DEBUG == 1
@@ -285,15 +291,19 @@ float Sodaq_BMP085::readTemperature(void)
 
 float Sodaq_BMP085::readAltitude(float sealevelPressure)
 {
-  float altitude;
+  if (data_d0 != 0x55)
+    return 0;
 
-  float pressure = readPressure();
-
-  altitude = 44330 * (1.0 - pow(pressure / sealevelPressure, 0.1903));
-
-  return altitude;
+  return 44330 * (1.0 - pow(readPressure() / sealevelPressure, 0.1903));
 }
 
+int32_t Sodaq_BMP085::readPressureReducedToMeanSeaLevel(int32_t altitude)
+{
+  if (data_d0 != 0x55) 
+    return 0;
+
+  return roundf(readPressure() / pow(1.0 - altitude / 44330.0, 5.255));
+}
 
 /*********************************************************************/
 
